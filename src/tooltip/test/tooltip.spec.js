@@ -211,6 +211,37 @@ describe('tooltip', function() {
     }));
   });
 
+  describe('cleanup', function () {
+    var elmBody, elm, elmScope, tooltipScope;
+
+    it( 'should not contain a cached reference', inject( function( $compile, $timeout, $rootScope ) {
+      elmBody = angular.element(
+        '<div><input tooltip="Hello!" /></div>'
+      );
+      $compile(elmBody)($rootScope);
+      $rootScope.$apply();
+      elm = elmBody.find('input');
+      elmScope = elm.scope();
+      tooltipScope = elmScope.$$childTail;
+
+      function inCache() {
+        var match = false;
+
+        angular.forEach(angular.element.cache, function (item) {
+          if (item.data && item.data.$scope === tooltipScope) {
+            match = true;
+          }
+        });
+
+        return match;
+      }
+
+      expect( inCache() ).toBeTruthy();
+      elmScope.$destroy();
+      $timeout.flush();
+      expect( inCache() ).toBeFalsy();
+    }));
+  });
 });
 
 describe( 'tooltipHtmlUnsafe', function() {
